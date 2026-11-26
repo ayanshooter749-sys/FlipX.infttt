@@ -11,7 +11,7 @@ h1{font-size:24px;letter-spacing:4px;margin:0}h1 span{display:block;font-size:11
 .card b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:38px;color:#ffffff22}
 .card i{position:absolute;bottom:0;left:0;right:0;padding:10px;font-style:normal;font-size:12.5px;font-weight:800;background:linear-gradient(transparent,#000c)}
 .card i u{display:block;text-decoration:none;font-size:8px;letter-spacing:1.5px;color:#d98b3a;margin-bottom:3px}
-#play,#shelf.hide{display:none}
+.hide{display:none}
 #bar{display:flex;gap:8px;align-items:center;margin-bottom:8px}
 #bar button{font-size:10px;font-weight:800;padding:6px 10px;border-radius:6px;border:1px solid #ffffff26;background:#ffffff10;color:#e7dcd0;cursor:pointer}
 #bar span{flex:1;text-align:center;font-size:12px;font-weight:800;color:#f0b429;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -21,27 +21,28 @@ iframe{width:100%;height:100%;border:0;display:block}
 </style></head><body>
 <h1>SPARTA<span>ARCADE</span></h1>
 <p class="note">Play in browser. Nothing to install. Use WiFi, rotate to landscape.</p>
-<div class="grid" id="g"></div>
-<div id="play"><div id="bar"><button onclick="back()">&larr; LIBRARY</button><span id="nm"></span><button onclick="fs()">FULLSCREEN</button></div>
+<div class="grid" id="shelf"></div>
+<div id="play" class="hide"><div id="bar"><button onclick="back()">&larr; LIBRARY</button><span id="nm"></span><button onclick="fs()">FULLSCREEN</button></div>
 <div id="stage"><iframe id="fr" allow="fullscreen;autoplay;gamepad" allowfullscreen></iframe></div><p class="note" id="nt"></p></div>
 <script>
-var A='https://archive.org/download/';
+var A='https://archive.org/download/', CDN='https://cdn.emulatorjs.org/stable/data/';
 var G=[
  {c:'GoW',s:'PSP',n:'God of War: Chains of Olympus',k:'psp',u:A+'def-jam-vendetta-u/God%20of%20War%20-%20Chains%20of%20Olympus%20(USA)%20(PSN).iso',z:'1.4 GB'},
  {c:'GoW',s:'PSP',n:'God of War: Ghost of Sparta',k:'psp',u:A+'def-jam-vendetta-u/God%20of%20War%20-%20Ghost%20of%20Sparta.iso',z:'1.7 GB'},
  {c:'T3',s:'PLAYSTATION',n:'Tekken 3',k:'psx',u:A+'TEKIII/TEKIII.iso',b:A+'ps1-2-BIOS/SCPH5500.BIN',z:'636 MB'},
  {c:'GoW',s:'PS2',n:'God of War (2005)',k:'ps2',u:A+'scus-973.99.-god-of-war-usa/SCUS_973.99.God%20of%20War%20(USA).iso',b:A+'ps1-2-BIOS/Playstation%202%20BIOS%20Collection/SCPH-10000_BIOS_V1_JAP_100_(NTSC)/SCPH-10000_BIOS_V1_JAP_100.BIN',z:'8.5 GB'}];
+var shelf=document.getElementById('shelf'), play=document.getElementById('play'), fr=document.getElementById('fr');
 G.forEach(function(g,i){var b=document.createElement('button');b.className='card';
- b.innerHTML='<b>'+g.c+'</b><i><u>'+g.s+'</u>'+g.n+'</i>';b.onclick=function(){go(i)};document.getElementById('g').appendChild(b)});
-function go(i){var g=G[i];document.getElementById('shelf').classList.add('hide');
- document.getElementById('play').style.display='block';document.getElementById('nm').textContent=g.n;
+ b.innerHTML='<b>'+g.c+'</b><i><u>'+g.s+'</u>'+g.n+'</i>';b.onclick=function(){go(i)};shelf.appendChild(b)});
+function go(i){var g=G[i];
+ shelf.classList.add('hide'); play.classList.remove('hide');
+ document.getElementById('nm').textContent=g.n;
  document.getElementById('nt').textContent=g.z+' stream — WiFi zaroori.';
- document.getElementById('fr').srcdoc='<!DOCTYPE html><html><head><meta charset="utf-8"><style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#g{width:100%;height:100%}</style></head><body><div id="g"></div><script>'+
+ fr.srcdoc='<!DOCTYPE html><html><head><meta charset="utf-8"><style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#g{width:100%;height:100%}</style></head><body><div id="g"></div><script>'+
  'EJS_player="#g";EJS_core="'+g.k+'";EJS_gameUrl="'+g.u+'";EJS_biosUrl="'+(g.b||'')+'";EJS_gameName="'+g.n+'";'+
- 'EJS_pathtodata="https://cdn.jsdelivr.net/npm/@emulatorjs/emulatorjs@latest/data/";EJS_startOnLoaded=true;'+
+ 'EJS_pathtodata="'+CDN+'";EJS_startOnLoaded=true;'+
  'EJS_defaultOptions={"save-state-location":"browser"};<\/script>'+
- '<script src="https://cdn.jsdelivr.net/npm/@emulatorjs/emulatorjs@latest/data/loader.js"><\/script></body></html>';}
-function back(){document.getElementById('play').style.display='none';
- document.getElementById('shelf').classList.remove('hide');document.getElementById('fr').srcdoc='';}
+ '<script src="'+CDN+'loader.js"><\/script></body></html>';}
+function back(){play.classList.add('hide'); shelf.classList.remove('hide'); fr.srcdoc='';}
 function fs(){var s=document.getElementById('stage');document.fullscreenElement?document.exitFullscreen():s.requestFullscreen&&s.requestFullscreen();}
 </script></body></html>
